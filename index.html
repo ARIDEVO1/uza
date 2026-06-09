@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Dungeon Map Designer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            color: #1a1a1a;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+        }
+
+        h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+            color: #1a1a1a;
+        }
+
+        .config-panel {
+            background: #f9f9f9;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        input[type="password"],
+        select,
+        textarea {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .color-legend {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .color-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-box {
+            width: 24px;
+            height: 24px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+            margin-bottom: 24px;
+        }
+
+        .main-grid > .editor-section:first-child {
+            grid-column: 1 / -1;
+        }
+
+        .editor-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .visual-grid {
+            display: inline-block;
+            border: 2px solid #ccc;
+            background: #f0f0f0;
+            padding: 4px;
+            border-radius: 6px;
+        }
+
+        .grid-row {
+            display: flex;
+            gap: 0;
+        }
+
+        .grid-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.05s;
+            user-select: none;
+            border: 0.5px solid rgba(0,0,0,0.05);
+        }
+
+        .grid-cell:hover {
+            opacity: 0.8;
+        }
+
+        .grid-cell.has-grid {
+            border: 0.5px solid rgba(0,0,0,0.1);
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            resize: vertical;
+            margin-bottom: 12px;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+
+        .ai-section {
+            border-top: 1px solid #e0e0e0;
+            padding-top: 16px;
+        }
+
+        .chat-log {
+            height: 120px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 12px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .log-message {
+            margin-bottom: 4px;
+            color: #666;
+        }
+
+        .log-message.error {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .log-message.ai {
+            color: #3b82f6;
+        }
+
+        .log-message.user {
+            color: #1a1a1a;
+        }
+
+        .log-message.success {
+            color: #22c55e;
+        }
+
+        .chat-input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input-group input {
+            flex: 1;
+        }
+
+        .info-panel {
+            padding: 16px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .info-panel strong {
+            color: #1a1a1a;
+        }
+
+        .info-panel ul {
+            margin: 8px 0 0 20px;
+        }
+
+        .info-panel li {
+            margin: 4px 0;
+        }
+
+        .info-panel a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .info-panel a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .config-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 12px;
+            }
+
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .color-legend {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+
+        .timestamp {
+            color: #999;
+            font-size: 10px;
+        }
+
+        .tile-btn {
+            padding: 10px 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .tile-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .tile-btn.active {
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5);
+            transform: scale(1.05);
+        }
+
+        /* Dark Mode */
+        body.dark-mode {
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .container {
+            background: #2a2a2a;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode h1,
+        body.dark-mode h3 {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .config-panel {
+            background: #333;
+            border-color: #444;
+        }
+
+        body.dark-mode .form-group label {
+            color: #aaa;
+        }
+
+        body.dark-mode input[type="number"],
+        body.dark-mode input[type="text"],
+        body.dark-mode input[type="password"],
+        body.dark-mode select,
+        body.dark-mode textarea {
+            background: #3a3a3a;
+            color: #e0e0e0;
+            border-color: #444;
+        }
+
+        body.dark-mode input[type="number"]:focus,
+        body.dark-mode input[type="text"]:focus,
+        body.dark-mode input[type="password"]:focus,
+        body.dark-mode select:focus,
+        body.dark-mode textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        body.dark-mode button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+        }
+
+        body.dark-mode button:hover {
+            background: #2563eb;
+        }
+
+        body.dark-mode button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        body.dark-mode .visual-grid {
+            border-color: #444;
+            background: #2a2a2a;
+        }
+
+        body.dark-mode .grid-cell {
+            border-color: rgba(255,255,255,0.05);
+        }
+
+        body.dark-mode .grid-cell.has-grid {
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        body.dark-mode .chat-log {
+            background: #333;
+            border-color: #444;
+        }
+
+        body.dark-mode .log-message {
+            color: #aaa;
+        }
+
+        body.dark-mode .log-message.user {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .info-panel {
+            background: #333;
+            border-left-color: #3b82f6;
+        }
+
+        body.dark-mode .info-panel {
+            color: #aaa;
+        }
+
+        body.dark-mode .info-panel strong {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .help-text {
+            color: #aaa;
+        }
+
+        body.dark-mode .color-item {
+            color: #aaa;
+        }
+
+        body.dark-mode .checkbox-label {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode div[style*="background: #f9f9f9"] {
+            background: #333 !important;
+            border-color: #444 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ Advanced Dungeon Map Designer</h1>
+
+        <!-- Configuration Panel -->
+        <div class="config-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="margin: 0;">Configuration</h3>
+                <button onclick="toggleDarkMode()" style="background: #666; min-width: 120px;">🌙 Dark Mode</button>
+            </div>
+            <div class="config-grid">
+                <div class="form-group">
+                    <label for="width">Width (X)</label>
+                    <input type="number" id="width" min="5" max="50" value="25">
+                </div>
+                <div class="form-group">
+                    <label for="height">Height (Y)</label>
+                    <input type="number" id="height" min="5" max="50" value="14">
+                </div>
+                <div class="form-group">
+                    <label for="showGrid">Display</label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="showGrid" checked>
+                        Show grid overlay
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="doorInPos">Door In (↓) - Entry</label>
+                    <select id="doorInPos">
+                        <option value="bottom">bottom</option>
+                        <option value="bottomleft">bottomleft</option>
+                        <option value="bottomright">bottomright</option>
+                        <option value="left">left</option>
+                        <option value="right">right</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="doorOutPos">Door Out (↑) - Exit</label>
+                    <select id="doorOutPos">
+                        <option value="up">up</option>
+                        <option value="upleft">upleft</option>
+                        <option value="upright">upright</option>
+                    </select>
+                </div>
+            </div>
+            <div class="button-group">
+                <button onclick="generateNewMap()">Generate New Map</button>
+                <button onclick="loadTemplate('maze')" style="background: #8b5cf6;">🌀 Maze</button>
+                <button onclick="loadTemplate('cathedral')" style="background: #f59e0b;">🏛️ Cathedral</button>
+                <button onclick="loadTemplate('simple')" style="background: #06b6d4;">📦 Simple</button>
+            </div>
+        </div>
+
+        <!-- Color Legend -->
+        <div class="color-legend">
+            <div class="color-item">
+                <div class="color-box" style="background: #bbbbbb;"></div>
+                <span>0 = Floor</span>
+            </div>
+            <div class="color-item">
+                <div class="color-box" style="background: #1a1a1a;"></div>
+                <span>1 = Wall</span>
+            </div>
+            <div class="color-item">
+                <div class="color-box" style="background: #22c55e;"></div>
+                <span>2 = Door Out</span>
+            </div>
+            <div class="color-item">
+                <div class="color-box" style="background: #3b82f6;"></div>
+                <span>3 = Door In</span>
+            </div>
+        </div>
+
+        
+
+        <!-- Main Content Grid -->
+        <div class="main-grid">
+            <!-- Visual Editor -->
+            <div class="editor-section">
+                <h3>Visual Editor</h3>
+                <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+                    <button class="tile-btn" data-tile="0" onclick="selectTile(0)" style="background: #bbbbbb; color: #000; border: 3px solid #999;">Floor</button>
+                    <button class="tile-btn" data-tile="1" onclick="selectTile(1)" style="background: #1a1a1a; color: #fff; border: 3px solid #999;">Wall</button>
+                    <button class="tile-btn" data-tile="2" onclick="selectTile(2)" style="background: #22c55e; color: #000; border: 3px solid #999;">Door Out</button>
+                    <button class="tile-btn" data-tile="3" onclick="selectTile(3)" style="background: #3b82f6; color: #fff; border: 3px solid #999;">Door In</button>
+                </div>
+                <div style="overflow: auto; display: flex; justify-content: center; align-items: flex-start; padding: 20px; background: #17191d; border-radius: 8px; min-height: 500px; max-height: 70vh;">
+                    <div id="visualGrid" class="visual-grid"></div>
+                </div>
+                <p class="help-text">Select a tile type above, then click or drag to paint</p>
+                
+                <!-- Door Coordinates Panel -->
+                <div style="margin-top: 24px; padding: 16px; background: #f9f9f9; border-radius: 8px; border: 1px solid #e0e0e0;">
+                    <h3>Door Coordinates</h3>
+                    <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                        <button onclick="detectDoorCoordinates()">Detect Doors</button>
+                        <button onclick="copyDoorCoordinates()">Copy Code</button>
+                    </div>
+                    <textarea id="doorCoordinates" readonly style="width: 100%; height: 80px; font-family: 'Courier New', monospace; font-size: 12px;"></textarea>
+                    <p class="help-text">Shows the coordinates of the floor tile directly in front of each door</p>
+                </div>
+            </div>
+            <!-- Array & AI Chat -->
+            <div class="editor-section">
+                <h3>Array Editor</h3>
+                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                    <button onclick="loadArray()" style="background: #22c55e;">Update Visual</button>
+                </div>
+                <textarea id="arrayText" spellcheck="false"></textarea>
+
+                <!-- AI Chat Section -->
+                <div class="ai-section">
+                    <h3>AI Assistant (Groq)</h3>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label for="groqKey">Groq API Key</label>
+                        <input type="password" id="groqKey" placeholder="gsk_...">
+                    </div>
+
+                    <div class="chat-log" id="chatLog"></div>
+
+                    <div class="chat-input-group">
+                        <input type="text" id="chatInput" placeholder="e.g., Add obstacles in the middle..." onkeypress="handleKeyPress(event)">
+                        <button onclick="sendAIRequest()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Room Builder Panel -->
+        <div style="margin-top: 24px; padding: 16px; background: #f9f9f9; border-radius: 8px; border: 1px solid #e0e0e0;">
+            <h3>Room Builder (Procedural Generation)</h3>
+            <p class="help-text" style="margin-bottom: 12px;">Create interconnected rooms without AI - fast and reliable!</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 12px;">
+                <div class="form-group">
+                    <label for="numRooms">Number of Rooms</label>
+                    <select id="numRooms">
+                        <option value="2">2 rooms</option>
+                        <option value="3" selected>3 rooms</option>
+                        <option value="4">4 rooms</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="doorInLocation">Door In (Entry)</label>
+                    <select id="doorInLocation">
+                        <option value="bottom" selected>bottom</option>
+                        <option value="left">left</option>
+                        <option value="right">right</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="doorOutLocation">Door Out (Exit)</label>
+                    <select id="doorOutLocation">
+                        <option value="top" selected>top</option>
+                        <option value="left">left</option>
+                        <option value="right">right</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="generateRooms()">Generate Connected Rooms</button>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="info-panel">
+            <strong>💡 Tips:</strong>
+            <ul>
+                <li>Select a tile type, then click cells to paint</li>
+                <li>Edit array directly or paste existing code</li>
+                <li>Click <strong>Update Visual</strong> to render changes from the array editor</li>
+                <li><strong>✅ AI works best with simple, single requests:</strong>
+                    <ul style="margin-top: 8px;">
+                        <li>"Add obstacles in the middle"</li>
+                        <li>"Make a corridor on the left"</li>
+                        <li>"Add a chamber in the center"</li>
+                        <li>"Make it more maze-like"</li>
+                    </ul>
+                </li>
+                <li><strong>⚠️ Complex requests may fail:</strong> Break multi-room requests into 2-3 separate AI calls or build manually</li>
+                <li>Get free Groq API key at <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const COLORS = {
+            0: '#bbbbbb',  // floor - white
+            1: '#1a1a1a',  // wall - black
+            2: '#22c55e',  // door out - green
+            3: '#3b82f6'   // door in - blue
+        };
+
+        const LABELS = {
+            0: 'Floor',
+            1: 'Wall',
+            2: 'Door Out',
+            3: 'Door In'
+        };
+
+        let isDrawing = false;
+        let currentCellSize = 20;
+        let gridStartX = 0;
+        let gridStartY = 0;
+
+        function getCellFromEvent(event) {
+            const container = document.getElementById('visualGrid');
+            const rect = container.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            const cellX = Math.floor(x / currentCellSize);
+            const cellY = Math.floor(y / currentCellSize);
+            
+            // Check bounds
+            if (cellX >= 0 && cellX < map[0].length && cellY >= 0 && cellY < map.length) {
+                return { x: cellX, y: cellY };
+            }
+            return null;
+        }
+
+        function paintCell(y, x) {
+            if (x >= 0 && x < map[0].length && y >= 0 && y < map.length) {
+                map[y][x] = selectedTile;
+            }
+        }
+
+        function setupGridDragListeners() {
+            const container = document.getElementById('visualGrid');
+            let cellsTouched = [];
+            
+            container.addEventListener('mousedown', (e) => {
+                isDrawing = true;
+                cellsTouched = [];
+                const cell = getCellFromEvent(e);
+                if (cell) {
+                    paintCell(cell.y, cell.x);
+                    cellsTouched.push({y: cell.y, x: cell.x});
+                }
+            });
+
+            container.addEventListener('mousemove', (e) => {
+                if (isDrawing) {
+                    const cell = getCellFromEvent(e);
+                    if (cell) {
+                        // Check if cell already painted in this drag
+                        if (!cellsTouched.some(c => c.y === cell.y && c.x === cell.x)) {
+                            paintCell(cell.y, cell.x);
+                            cellsTouched.push({y: cell.y, x: cell.x});
+                        }
+                    }
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDrawing) {
+                    isDrawing = false;
+                    // Update visual only once at the end of drag
+                    updateVisual();
+                    updateArray();
+                    detectDoorCoordinates();
+                }
+            });
+
+            container.addEventListener('mouseleave', () => {
+                if (isDrawing) {
+                    isDrawing = false;
+                    // Update visual when leaving
+                    updateVisual();
+                    updateArray();
+                    detectDoorCoordinates();
+                }
+            });
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeMap(25, 14);
+            addLog('Map initialized', 'success');
+            selectTile(0); // Set initial tile selection
+            loadDarkModePreference();
+        });
+
+        function initializeMap(width, height) {
+            map = generateBasicMap(width, height);
+            map = addDoorToMap(map, 'in', 'bottom');
+            map = addDoorToMap(map, 'out', 'up');
+            updateVisual();
+            updateArray();
+            updateDimensions(width, height);
+            detectDoorCoordinates();
+        }
+
+        function generateBasicMap(w, h) {
+            const arr = [];
+            for (let y = 0; y < h; y++) {
+                arr[y] = [];
+                for (let x = 0; x < w; x++) {
+                    if (y === 0 || y === h - 1 || x === 0 || x === w - 1) {
+                        arr[y][x] = 1;
+                    } else {
+                        arr[y][x] = 0;
+                    }
+                }
+            }
+            return arr;
+        }
+
+        function addDoorToMap(mapArr, doorType, position) {
+            const newMap = mapArr.map(r => [...r]);
+            const h = newMap.length;
+            const w = newMap[0].length;
+
+            if (doorType === 'in') {
+                // Door In (type 3) - can be on bottom, left, right
+                if (position === 'bottom') {
+                    newMap[h - 1][Math.floor(w / 2)] = 3;
+                } else if (position === 'bottomleft') {
+                    newMap[h - 1][2] = 3;
+                } else if (position === 'bottomright') {
+                    newMap[h - 1][w - 3] = 3;
+                } else if (position === 'left') {
+                    newMap[Math.floor(h / 2)][0] = 3;
+                } else if (position === 'right') {
+                    newMap[Math.floor(h / 2)][w - 1] = 3;
+                }
+            } else {
+                // Door Out (type 2) - can be on top
+                if (position === 'up') {
+                    newMap[0][Math.floor(w / 2)] = 2;
+                } else if (position === 'upleft') {
+                    newMap[0][2] = 2;
+                } else if (position === 'upright') {
+                    newMap[0][w - 3] = 2;
+                }
+            }
+            return newMap;
+        }
+
+        function updateDimensions(w, h) {
+            document.getElementById('width').value = w;
+            document.getElementById('height').value = h;
+        }
+
+        function formatArray(arr) {
+            return '[\n' + arr.map(row => '  [' + row.join(',') + ']').join(',\n') + '\n]';
+        }
+
+        function parseArray(text) {
+            try {
+                const arr = eval(text);
+                if (Array.isArray(arr) && arr.every(r => Array.isArray(r))) {
+                    return arr;
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        function updateArray() {
+            document.getElementById('arrayText').value = formatArray(map);
+        }
+
+        function updateVisual() {
+            const container = document.getElementById('visualGrid');
+            const showGrid = document.getElementById('showGrid').checked;
+            
+            // Calculate cell size based on available space
+            const parentContainer = container.parentElement;
+            const availableWidth = parentContainer.clientWidth - 40; // Account for padding
+            const availableHeight = parentContainer.clientHeight - 40;
+            
+            const cellSizeByWidth = Math.floor(availableWidth / map[0].length);
+            const cellSizeByHeight = Math.floor(availableHeight / map.length);
+            const cellSize = Math.max(20, Math.min(cellSizeByWidth, cellSizeByHeight));
+            
+            // Store cellSize for drag calculations
+            currentCellSize = cellSize;
+
+            container.innerHTML = '';
+            container.style.display = 'inline-grid';
+            container.style.gridTemplateColumns = `repeat(${map[0].length}, ${cellSize}px)`;
+            container.style.gap = '0';
+            container.style.cursor = 'crosshair';
+
+            map.forEach((row, y) => {
+                row.forEach((cell, x) => {
+                    const cellEl = document.createElement('div');
+                    cellEl.className = 'grid-cell';
+                    if (showGrid) cellEl.classList.add('has-grid');
+                    cellEl.style.width = cellSize + 'px';
+                    cellEl.style.height = cellSize + 'px';
+                    cellEl.style.backgroundColor = COLORS[cell];
+                    cellEl.title = `(${x},${y}): ${LABELS[cell]}`;
+                    cellEl.style.userSelect = 'none';
+                    container.appendChild(cellEl);
+                });
+            });
+            
+            // Setup drag listeners after grid is created
+            setupGridDragListeners();
+        }
+
+        function generateNewMap() {
+            const width = parseInt(document.getElementById('width').value);
+            const height = parseInt(document.getElementById('height').value);
+            const doorInPos = document.getElementById('doorInPos').value;
+            const doorOutPos = document.getElementById('doorOutPos').value;
+
+            let newMap = generateBasicMap(width, height);
+            newMap = addDoorToMap(newMap, 'in', doorInPos);
+            newMap = addDoorToMap(newMap, 'out', doorOutPos);
+
+            map = newMap;
+            updateVisual();
+            updateArray();
+            detectDoorCoordinates();
+            addLog(`Generated ${width}x${height} map with door-in (${doorInPos}) and door-out (${doorOutPos})`, 'success');
+        }
+
+        function loadArray() {
+            const text = document.getElementById('arrayText').value;
+            const parsed = parseArray(text);
+            if (parsed) {
+                map = parsed;
+                updateDimensions(parsed[0].length, parsed.length);
+                updateVisual();
+                detectDoorCoordinates();
+                addLog('Array loaded successfully', 'success');
+            } else {
+                addLog('ERROR: Invalid array format', 'error');
+            }
+        }
+
+        function addLog(message, type = 'default') {
+            const chatLog = document.getElementById('chatLog');
+            const logEl = document.createElement('div');
+            logEl.className = 'log-message ' + type;
+            const time = new Date().toLocaleTimeString();
+            logEl.innerHTML = `<span class="timestamp">[${time}]</span> ${escapeHtml(message)}`;
+            chatLog.appendChild(logEl);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendAIRequest();
+            }
+        }
+
+        async function sendAIRequest() {
+            const chatInput = document.getElementById('chatInput');
+            const groqKey = document.getElementById('groqKey').value;
+            const message = chatInput.value.trim();
+
+            if (!message) return;
+            if (!groqKey.trim()) {
+                addLog('ERROR: Groq API key not set', 'error');
+                return;
+            }
+
+            // Validate API key format
+            if (!groqKey.startsWith('gsk_')) {
+                addLog('ERROR: Invalid API key format (should start with "gsk_")', 'error');
+                return;
+            }
+
+            if (isLoading) return;
+            isLoading = true;
+
+            addLog('User: ' + message, 'user');
+            chatInput.value = '';
+            document.querySelector('button[onclick="sendAIRequest()"]').disabled = true;
+
+            try {
+                // Optimized prompt for Qwen model
+                const prompt = `You are a dungeon map designer. You MUST return ONLY a valid 2D array.
+
+RULES:
+- 0 = floor (walkable)
+- 1 = wall (solid)
+- 2 = door-out (top exit) - KEEP
+- 3 = door-in (bottom entry) - KEEP
+- Dimensions: ${map.length} rows × ${map[0].length} columns
+- Return ONLY the array, nothing else
+
+Current map (${map.length}×${map[0].length}):
+${formatArray(map)}
+
+Modification: ${message}
+
+Output: Return the modified array ONLY, in exact bracket format.`;
+
+
+                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${groqKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'qwen/qwen3-32b',
+                        messages: [{ role: 'user', content: prompt }],
+                        temperature: 0.3,
+                        max_tokens: 2000,
+                    }),
+                });
+
+                if (!response.ok) {
+                    let errorMsg = `API error ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.error) {
+                            errorMsg = errorData.error.message || errorMsg;
+                        }
+                    } catch (e) {
+                        // Could not parse error details
+                    }
+                    throw new Error(errorMsg);
+                }
+
+                const data = await response.json();
+                if (!data.choices || !data.choices[0]) {
+                    throw new Error('Invalid API response - no choices returned');
+                }
+
+                const result = data.choices[0].message.content.trim();
+                
+                // Try to extract array from response
+                const arrayMatch = result.match(/\[[\s\S]*\]/);
+                const arrayStr = arrayMatch ? arrayMatch[0] : result;
+                const parsed = parseArray(arrayStr);
+
+                if (parsed && parsed.length === map.length && parsed[0].length === map[0].length) {
+                    map = parsed;
+                    updateVisual();
+                    updateArray();
+                    detectDoorCoordinates();
+                    addLog(`AI: Modified map - ${message}`, 'ai');
+                } else {
+                    addLog(`AI: Response was invalid. Try a simpler request (e.g., "add obstacles")`, 'error');
+                }
+            } catch (error) {
+                addLog(`AI ERROR: ${error.message}`, 'error');
+            } finally {
+                isLoading = false;
+                document.querySelector('button[onclick="sendAIRequest()"]').disabled = false;
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function generateRooms() {
+            const width = map[0].length;
+            const height = map.length;
+            const numRooms = parseInt(document.getElementById('numRooms').value);
+            const doorInLoc = document.getElementById('doorInLocation').value;
+            const doorOutLoc = document.getElementById('doorOutLocation').value;
+
+            // Create filled map (all walls)
+            let newMap = Array(height).fill(null).map(() => Array(width).fill(1));
+
+            // Calculate divider lines (1px walls)
+            let dividerX = Math.floor(width / 2);
+            let dividerY = Math.floor(height / 2);
+
+            // Define rooms with 1px wall separators
+            let rooms = [];
+            if (numRooms === 2) {
+                // Left and right
+                rooms = [
+                    { x: 2, y: 2, w: dividerX - 3, h: height - 4 },
+                    { x: dividerX + 1, y: 2, w: width - dividerX - 3, h: height - 4 }
+                ];
+            } else if (numRooms === 3) {
+                // Top-left, top-right, bottom-center
+                rooms = [
+                    { x: 2, y: 2, w: dividerX - 3, h: dividerY - 3 },
+                    { x: dividerX + 1, y: 2, w: width - dividerX - 3, h: dividerY - 3 },
+                    { x: Math.floor(width / 4), y: dividerY + 1, w: Math.floor(width / 2), h: height - dividerY - 3 }
+                ];
+            } else if (numRooms === 4) {
+                // 2x2 grid
+                rooms = [
+                    { x: 2, y: 2, w: dividerX - 3, h: dividerY - 3 },
+                    { x: dividerX + 1, y: 2, w: width - dividerX - 3, h: dividerY - 3 },
+                    { x: 2, y: dividerY + 1, w: dividerX - 3, h: height - dividerY - 3 },
+                    { x: dividerX + 1, y: dividerY + 1, w: width - dividerX - 3, h: height - dividerY - 3 }
+                ];
+            }
+
+            // Carve out rooms (keep 1px walls as dividers)
+            rooms.forEach(room => {
+                for (let y = room.y; y < room.y + room.h && y < height; y++) {
+                    for (let x = room.x; x < room.x + room.w && x < width; x++) {
+                        newMap[y][x] = 0;
+                    }
+                }
+            });
+
+            // Create doorways in divider walls between rooms
+            if (numRooms >= 2) {
+                // Vertical divider (between left and right rooms)
+                if (numRooms === 2 || numRooms === 4) {
+                    newMap[Math.floor(height / 2)][dividerX] = 0;
+                }
+                // Horizontal divider (between top and bottom)
+                if (numRooms === 4 || numRooms === 3) {
+                    newMap[dividerY][Math.floor(width / 2)] = 0;
+                }
+                // Additional doorway for 3-room layout
+                if (numRooms === 3) {
+                    newMap[dividerY][dividerX] = 0;
+                }
+            }
+
+            // Place Door In based on preference
+            if (doorInLoc === 'bottom') {
+                newMap[height - 1][Math.floor(width / 2)] = 3;
+            } else if (doorInLoc === 'left') {
+                newMap[Math.floor(height / 2)][0] = 3;
+            } else if (doorInLoc === 'right') {
+                newMap[Math.floor(height / 2)][width - 1] = 3;
+            }
+
+            // Place Door Out based on preference
+            if (doorOutLoc === 'top') {
+                newMap[0][Math.floor(width / 2)] = 2;
+            } else if (doorOutLoc === 'left') {
+                newMap[Math.floor(height / 2)][0] = 2;
+            } else if (doorOutLoc === 'right') {
+                newMap[Math.floor(height / 2)][width - 1] = 2;
+            }
+
+            map = newMap;
+            updateVisual();
+            updateArray();
+            detectDoorCoordinates();
+            addLog(`Generated ${numRooms} rooms with 1px wall separators`, 'success');
+        }
+
+        function findDoorFront(doorX, doorY, doorType) {
+            const h = map.length;
+            const w = map[0].length;
+            
+            // Determine direction: which direction from the door to look for the floor
+            let searchDirs = [];
+            
+            // If door is on top wall
+            if (doorY === 0) searchDirs = [[0, 1]]; // look down
+            // If door is on bottom wall
+            else if (doorY === h - 1) searchDirs = [[0, -1]]; // look up
+            // If door is on left wall
+            else if (doorX === 0) searchDirs = [[1, 0]]; // look right
+            // If door is on right wall
+            else if (doorX === w - 1) searchDirs = [[-1, 0]]; // look left
+            // Door is in the middle (search all directions)
+            else searchDirs = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+            
+            // Find the first floor (0) tile in the search directions
+            for (let [dx, dy] of searchDirs) {
+                let nx = doorX + dx;
+                let ny = doorY + dy;
+                
+                // Walk in that direction until we find a floor
+                while (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+                    if (map[ny][nx] === 0) {
+                        return [nx, ny];
+                    }
+                    nx += dx;
+                    ny += dy;
+                }
+            }
+            
+            return null;
+        }
+
+        function detectDoorCoordinates() {
+            const h = map.length;
+            const w = map[0].length;
+            const coords = {};
+            
+            // Find all doors
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    if (map[y][x] === 2) {
+                        const front = findDoorFront(x, y, 2);
+                        if (front) coords[2] = front;
+                    } else if (map[y][x] === 3) {
+                        const front = findDoorFront(x, y, 3);
+                        if (front) coords[3] = front;
+                    }
+                }
+            }
+            
+            // Format as RenPy dict
+            let output = '{\n';
+            if (coords[2]) {
+                output += `    2: (${coords[2][0]},${coords[2][1]}),\n`;
+            }
+            if (coords[3]) {
+                output += `    3: (${coords[3][0]},${coords[3][1]}),\n`;
+            }
+            output += '}';
+            
+            document.getElementById('doorCoordinates').value = output;
+            addLog('Door coordinates detected', 'success');
+        }
+
+        function copyDoorCoordinates() {
+            const textarea = document.getElementById('doorCoordinates');
+            if (textarea.value.trim()) {
+                textarea.select();
+                document.execCommand('copy');
+                addLog('Door coordinates copied to clipboard', 'success');
+            }
+        }
+
+        // Update visual when grid toggle changes
+        document.getElementById('showGrid').addEventListener('change', updateVisual);
+
+        function selectTile(tileType) {
+            selectedTile = tileType;
+            // Update button styles
+            document.querySelectorAll('.tile-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.tile-btn[data-tile="${tileType}"]`).classList.add('active');
+        }
+
+        function toggleDarkMode() {
+            const isDarkMode = document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode ? 'true' : 'false');
+            
+            const button = event.target;
+            button.textContent = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+
+        function loadDarkModePreference() {
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                const button = document.querySelector('button[onclick="toggleDarkMode()"]');
+                if (button) button.textContent = '☀️ Light Mode';
+            }
+        }
+
+        // Template Generators
+        function loadTemplate(type) {
+            let newMap;
+            switch(type) {
+                case 'maze':
+                    newMap = generateSimpleMaze();
+                    break;
+                case 'cathedral':
+                    newMap = generateCathedral();
+                    break;
+                case 'simple':
+                    newMap = generateSimpleRooms();
+                    break;
+                default:
+                    return;
+            }
+            
+            map = newMap;
+            updateDimensions(newMap[0].length, newMap.length);
+            updateVisual();
+            updateArray();
+            detectDoorCoordinates();
+            addLog(`Loaded ${type} template`, 'success');
+        }
+
+        function generateSimpleMaze() {
+            const w = parseInt(document.getElementById('width').value);
+            const h = parseInt(document.getElementById('height').value);
+            const newMap = generateBasicMap(w, h);
+            
+            // Add internal walls to create maze
+            for (let y = 3; y < h - 2; y += 4) {
+                for (let x = 2; x < w - 2; x++) {
+                    if (Math.random() > 0.3) newMap[y][x] = 1;
+                }
+            }
+            
+            // Add vertical walls
+            for (let x = 4; x < w - 2; x += 5) {
+                for (let y = 2; y < h - 2; y++) {
+                    if (Math.random() > 0.4) newMap[y][x] = 1;
+                }
+            }
+            
+            return addDoorToMap(addDoorToMap(newMap, 'in', 'bottom'), 'out', 'up');
+        }
+
+        function generateCathedral() {
+            const w = parseInt(document.getElementById('width').value);
+            const h = parseInt(document.getElementById('height').value);
+            const newMap = generateBasicMap(w, h);
+            
+            // Create large central chamber
+            const centerX = Math.floor(w / 2);
+            const centerY = Math.floor(h / 2);
+            const chamberW = Math.floor(w * 0.6);
+            const chamberH = Math.floor(h * 0.6);
+            
+            for (let y = centerY - Math.floor(chamberH / 2); y < centerY + Math.floor(chamberH / 2); y++) {
+                for (let x = centerX - Math.floor(chamberW / 2); x < centerX + Math.floor(chamberW / 2); x++) {
+                    if (y >= 1 && y < h - 1 && x >= 1 && x < w - 1) {
+                        newMap[y][x] = 0;
+                    }
+                }
+            }
+            
+            // Add vertical pillars (columns)
+            const pillarSpacing = 6;
+            for (let x = centerX - Math.floor(chamberW / 3); x < centerX + Math.floor(chamberW / 3); x += pillarSpacing) {
+                for (let y = centerY - Math.floor(chamberH / 2) + 2; y < centerY + Math.floor(chamberH / 2) - 2; y++) {
+                    if (y >= 1 && y < h - 1 && x >= 1 && x < w - 1) {
+                        newMap[y][x] = 1;
+                    }
+                }
+            }
+            
+            // Add side rooms
+            for (let x = 2; x < centerX - Math.floor(chamberW / 2); x += 8) {
+                for (let y = 3; y < h - 3; y += 6) {
+                    for (let dy = 0; dy < 4; dy++) {
+                        for (let dx = 0; dx < 4; dx++) {
+                            if (y + dy < h - 1 && x + dx < w - 1) {
+                                newMap[y + dy][x + dx] = 0;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return addDoorToMap(addDoorToMap(newMap, 'in', 'bottom'), 'out', 'up');
+        }
+
+        function generateSimpleRooms() {
+            const w = parseInt(document.getElementById('width').value);
+            const h = parseInt(document.getElementById('height').value);
+            const newMap = generateBasicMap(w, h);
+            
+            // Create 2-3 rectangular rooms
+            const roomConfigs = [
+                { x: 3, y: 3, w: 8, h: 6 },
+                { x: 14, y: 3, w: 8, h: 6 },
+            ];
+            
+            if (w > 30) {
+                roomConfigs.push({ x: 8, y: 11, w: 10, h: 5 });
+            }
+            
+            roomConfigs.forEach(room => {
+                if (room.x + room.w < w - 1 && room.y + room.h < h - 1) {
+                    for (let y = room.y; y < room.y + room.h; y++) {
+                        for (let x = room.x; x < room.x + room.w; x++) {
+                            newMap[y][x] = 0;
+                        }
+                    }
+                }
+            });
+            
+            // Add connecting corridors
+            newMap[8][6] = 0;
+            newMap[8][7] = 0;
+            newMap[8][8] = 0;
+            newMap[8][9] = 0;
+            newMap[8][10] = 0;
+            newMap[8][11] = 0;
+            newMap[8][12] = 0;
+            
+            return addDoorToMap(addDoorToMap(newMap, 'in', 'bottom'), 'out', 'up');
+        }
+    </script>
+</body>
+</html>
