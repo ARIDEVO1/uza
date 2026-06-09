@@ -1,35 +1,32 @@
-## Portfolio
+# Advanced Dungeon Map Designer
 
----
+Welcome! This is a web-based dungeon map designer with visual editing, AI assistance, and procedural generation.
 
-### Category Name 1 
+## Quick Start
 
-[Project 1 Title](/sample_page)
-<img src="images/dummy_thumbnail.jpg?raw=true"/>
+Open `index.html` to launch the application.
 
----
-[Project 2 Title](/pdf/sample_presentation.pdf)
-<img src="images/dummy_thumbnail.jpg?raw=true"/>
+## Features
 
----
-[Project 3 Title](http://example.com/)
-<img src="images/dummy_thumbnail.jpg?raw=true"/>
+- **Visual Grid Editor**: Click and drag to paint tiles
+- **Array Editor**: Edit the 2D map array directly
+- **Update Visual Button**: Render array changes instantly
+- **AI Assistant**: Modify maps with natural language (requires Groq API key)
+- **Room Builder**: Generate multi-room dungeons procedurally
+- **Templates**: Load pre-built maze, cathedral, or simple layouts
+- **Door Coordinates**: Automatically detect entry/exit positions
+- **Dark Mode**: Easy-on-the-eyes theme option
 
----
+## Usage
 
-### Category Name 2
+1. **Paint Tiles**: Select a tile type and click on the grid
+2. **Edit Array**: Modify the 2D array and click "Update Visual"
+3. **Generate**: Use templates or room builder for quick layouts
+4. **Refine with AI**: Use Groq API to adjust your map
+5. **Export**: Get door coordinates for your game engine
 
-- [Project 1 Title](http://example.com/)
-- [Project 2 Title](http://example.com/)
-- [Project 3 Title](http://example.com/)
-- [Project 4 Title](http://example.com/)
-- [Project 5 Title](http://example.com/)
+## Getting Groq API Key
 
----
+Visit [console.groq.com/keys](https://console.groq.com/keys) for a free API key.
 
-
-
-
----
-<p style="font-size:11px">Page template forked from <a href="https://github.com/evanca/quick-portfolio">evanca</a></p>
-<!-- Remove above link if you don't want to attibute -->
+See README.md for full documentation.
